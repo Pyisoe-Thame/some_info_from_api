@@ -56,3 +56,9 @@ Older devices tend to work with 9600 baud rate. As you can see, the baud rate he
 
 [MIT](https://choosealicense.com/licenses/mit/)
 
+
+## Screenshots
+
+![Serial Output](https://github.com/Pyisoe-Thame/some_info_from_api/blob/main/images/serial_output.PNG)
+*Figure 1: Serial output of the application.*
+
