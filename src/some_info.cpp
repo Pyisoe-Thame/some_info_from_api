@@ -56,7 +56,17 @@ void loop()
 
     JsonDocument * dt_doc = goFetchJson(dateTimeApiUrl.c_str());  // just simply taken the c_str content (not the whole object with additional attributes)
     if( dt_doc != nullptr)
-      dt_serial(dt_doc);  // show weather guess on serial monitor
+    { 
+      tmElementsPtr_t tm = getDateTimefromDoc(dt_doc);
+      if( tm != nullptr)
+      {
+        time_t this_time = makeTime(*tm);  // tm eletments to unix timestamp
+        setTime(this_time);  // set time with unix timestamp
+        // dt_serial(tm);  // show weather guess on serial monitor
+        serialPrintDateTime();
+        delete tm;  // release the dyna alloc mem
+      }
+    }
     delete dt_doc;
   } 
   else 
@@ -139,42 +149,76 @@ void wth_serial( const JsonDocument * wth_doc)
   Serial.print('\n');  // putchar('\n'); on serial monitor for next set of info
 }
 
-void dt_serial( const JsonDocument * dt_doc)
+tmElementsPtr_t getDateTimefromDoc( const JsonDocument * dt_doc)
 {
   const char * dateTime = (*dt_doc)["datetime"];
-  Serial.print("Date and Time info: ");
-  // Serial.println(dateTime);  // raw data
+  // Serial.print("Date and Time info: ");  
+  // Serial.println(dateTime);  // print ISO 8601 type date-time string (raw data)
 
-  int year, month, day, hour, minute, second;  // declare, divide & assign
+  int year, month, day, hour, minute, second;  // declare, divide & deploy
   sscanf( dateTime, "%4d-%2d-%2dT%2d:%2d:%2d", &year, &month, &day, &hour, &minute, &second);
 
-  tmElements_t tm;  // create a time_t object using the extracted components
-  tm.Year = year - 1970;  // tmElements_t year is offset from 1970
-  tm.Month = month;
-  tm.Day = day;
-  tm.Hour = hour;
-  tm.Minute = minute;
-  tm.Second = second;
+  tmElementsPtr_t tm = new tmElements_t;  // create a ptr to dyna alloc obj so it persists
+  if( tm == nullptr)
+  {
+    // mem alloc failed, Serial.print if Serial avaialable
+    return nullptr;
+  }
+  tm -> Year = CalendarYrToTm(year);  // same as year - 1970, tmElements_t counts year from 1970
+  tm -> Month = month;
+  tm -> Day = day;
+  tm -> Hour = hour;
+  tm -> Minute = minute;
+  tm -> Second = second;
+  return tm;
+}
 
+void dt_serial( const tmElementsPtr_t tm)
+{
   // month names array
   const char* months[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
   // print date_time in my favourite format; Dec/27/2023, 23:47:13
-  Serial.print(months[tm.Month - 1]);  // -1 to index month array
+  Serial.print( months[(*tm).Month - 1]);  // -1 to index month array
   Serial.print("/");
-  if (tm.Day < 10) Serial.print("0");  // 0 filler for one digit numbers
-  Serial.print(tm.Day);
+  if( (*tm).Day < 10) Serial.print("0");  // 0 filler for one digit numbers
+  Serial.print( (*tm).Day);
   Serial.print("/");
-  Serial.print(tmYearToCalendar(tm.Year));
+  Serial.print(tmYearToCalendar( (*tm).Year));
   Serial.print(", ");
-  if (tm.Hour < 10) Serial.print("0");  // 0 filler for one digit numbers
-  Serial.print(tm.Hour);
+  if( (*tm).Hour < 10) Serial.print("0");  // 0 filler for one digit numbers
+  Serial.print( (*tm).Hour);
   Serial.print(":");
-  if (tm.Minute < 10) Serial.print("0");  // 0 filler for one digit numbers
-  Serial.print(tm.Minute);
+  if( (*tm).Minute < 10) Serial.print("0");  // 0 filler for one digit numbers
+  Serial.print( (*tm).Minute);
   Serial.print(":");
-  if (tm.Second < 10) Serial.print("0");  // 0 filler for one digit numbers
-  Serial.print(tm.Second);
+  if( (*tm).Second < 10) Serial.print("0");  // 0 filler for one digit numbers
+  Serial.print( (*tm).Second);
+  Serial.println('\n');  // double putchar('\n'); on serial monitor for next set of info
+}
+
+void serialPrintDateTime()
+{
+  // month names array
+  const char* months[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+  Serial.print("Current date and time: ");
+  // print date_time in my favourite format; Dec/27/2023, 23:47:13
+  Serial.print( months[month() - 1]);  // -1 to index month array
+  Serial.print("/");
+  if( day() < 10) Serial.print("0");  // 0 filler for one digit numbers
+  Serial.print( day());
+  Serial.print("/");
+  Serial.print(year());
+  Serial.print(", ");
+  if( hour() < 10) Serial.print("0");  // 0 filler for one digit numbers
+  Serial.print( hour());
+  Serial.print(":");
+  if( minute() < 10) Serial.print("0");  // 0 filler for one digit numbers
+  Serial.print( minute());
+  Serial.print(":");
+  if( second() < 10) Serial.print("0");  // 0 filler for one digit numbers
+  Serial.print( second());
   Serial.println('\n');  // double putchar('\n'); on serial monitor for next set of info
 }
 
