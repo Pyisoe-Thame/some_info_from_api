@@ -5,11 +5,10 @@ JsonDocument * goFetchJson( const char * apiUrl, const char * token)  // token i
 {
   HTTPClient http;
   http.begin(apiUrl); // specify the URL
-  if( token)  // if( token != nullptr)
+  if( token)  // or if( token != nullptr)
     http.addHeader("Authorization", String("Bearer ") + token);  // add the autho header if token is provided
 
   int httpCode = http.GET(); // make the request
-
   if( httpCode > 0)  // check for the returning code
   { 
     String payload = http.getString();
@@ -19,24 +18,28 @@ JsonDocument * goFetchJson( const char * apiUrl, const char * token)  // token i
     // Serial.println(payload);  // print the response payload from server
       
     DynamicJsonDocument* doc = new DynamicJsonDocument(1024);
-    if( doc == nullptr) 
+    if(doc)  // or if( doc != nullptr)
+    {
+      DeserializationError error = deserializeJson( *doc, payload);
+      if(!error)  // just deserialization error handling
+        return doc;
+      else  // error happened
+      {
+        Serial.printf("Deserialization failed: %s\n", error.c_str());
+        delete doc;
+        http.end();
+        return nullptr;  // return an empty doc since NULL is not allowed
+      }
+    }
+    else  // new doc allocation failed
     {
       Serial.println("Failed to allocate memory for JsonDocument");
       return nullptr;
     }
-    DeserializationError error = deserializeJson( *doc, payload);
-    if(error)  // just deserialization error handling
-    {
-      Serial.print("deserializeJson() failed: ");
-      Serial.println(error.f_str());
-      delete doc;
-      return nullptr;  // return an empty doc since NULL is not allowed
-    }
-    return doc;
   } 
   else
   {
-    Serial.println("Error on HTTP request");
+    Serial.printf("Error in fetching data: %s\n", http.errorToString(httpCode).c_str());
     http.end();  // free the resources
     return nullptr;
   }

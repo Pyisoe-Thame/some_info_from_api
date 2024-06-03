@@ -1,4 +1,4 @@
-#include <../include/config.h>
+#include "config.h"  // path added
 
 const char* ssid     = "WiFi Name";  // these variables are used for WiFi 
 const char* password = "WiFi Password";  // please don't come hack my devices through home wifi

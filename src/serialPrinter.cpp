@@ -1,4 +1,4 @@
-#include <serialPrinter.h>
+#include "serialPrinter.h"
 
 void geo_serial( const JsonDocument * geo_doc)
 {
@@ -7,29 +7,22 @@ void geo_serial( const JsonDocument * geo_doc)
   const char* region = (*geo_doc)["region"];
   const char* country = (*geo_doc)["country"];
 
-  Serial.print("Location: ");
-  Serial.println(loc);  // String can concat in C++ but char* needs C function
-  Serial.print("City: ");
-  Serial.println(city);
-  Serial.print("Region: ");
-  Serial.println(region);
-  Serial.print("Country: ");
-  Serial.println(country);
+  Serial.printf("Location: %s\n", loc);
+  Serial.printf("City: %s\n", city);
+  Serial.printf("Region: %s\n", region);
+  Serial.printf("Country: %s\n", country);  // no reason to put '\n' next line
   Serial.print('\n');  // putchar('\n'); on serial monitor for next set of info
 }
 
 void wth_serial( const JsonDocument * wth_doc)
 {
-  const int temperature = static_cast<int> ((*wth_doc)["main"]["temp"]);  // typecast float to int with more reliability
-  const int humidity = static_cast<int> ((*wth_doc)["main"]["humidity"]);  // typecast float to int with more reliability
+  const float temperature = (*wth_doc)["main"]["temp"];  // typecast float to int with more reliability
+  const int humidity = static_cast<int> ((*wth_doc)["main"]["humidity"]);
   const char* weatherDescription = (*wth_doc)["weather"][0]["description"];
 
-  Serial.print("Temperature: ");
-  Serial.println(temperature);  // this is arduino's usage
-  Serial.print("Humidity: ");
-  Serial.println(humidity);  // this is arduino's usage
-  Serial.print("Description: ");
-  Serial.println(weatherDescription);  // String can concat in C++ but char* needs C function
+  Serial.printf("Temperature: %.2f\n", temperature);
+  Serial.printf("Humidity: %d\n", humidity);
+  Serial.printf("Description: %s\n", weatherDescription);
   Serial.print('\n');  // putchar('\n'); on serial monitor for next set of info
 }
 
@@ -37,7 +30,7 @@ void dt_serial( const tmElementsPtr_t tm)  // print the dateTime value of tm in 
 {
     // month names array
     const char* months[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-    Serial.print("Current date and time: ");
+    Serial.println("Current date and time: ");
 
 /*
     print date & time in my favourite format; Dec/27/2023, 23:47:13

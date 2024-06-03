@@ -4,6 +4,7 @@
 #include <TimeLib.h>
 #include <ArduinoJson.h>
 
+void connectToWiFi();
 tmElementsPtr_t getDateTimefromDoc( const JsonDocument * dt_doc);
 
 #endif
