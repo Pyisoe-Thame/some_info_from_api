@@ -38,8 +38,8 @@ JsonDocument * goFetchJson( const char * apiUrl, const char * token)  // token i
     }
   } 
   else
-  {
-    Serial.printf("Error in fetching data: %s\n", http.errorToString(httpCode).c_str());
+  {  // priting error part commented out and retry outside of this function 
+    // Serial.printf("Error in fetching data: %s\n", http.errorToString(httpCode).c_str());
     http.end();  // free the resources
     return nullptr;
   }

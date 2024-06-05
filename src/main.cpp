@@ -60,13 +60,19 @@ void loop()
 {
   if( WiFi.status() != WL_CONNECTED)  // check again if the device is connected to Wi-Fi
     connectToWiFi();
+  retry:  // put this because open weather map is refusing connection
   JsonDocument * wth_doc = goFetchJson(weatherApiUrlBase.c_str());  // just simply taken the c_str content (not the whole object with additional attributes)
   if(wth_doc)  // or if( wth_doc != nullptr)
     wth_serial(wth_doc);  // show weather guess on serial monitor
+  else
+  {
+    delete wth_doc;
+    goto retry;  // took up to around 50 calls to get a finally 'Yes' from api
+  }
   delete wth_doc;  // no worries, even nullptr is safe to delete
   WiFi.disconnect(true);  // true to turn WiFi-radio hardware off after disconnect
   WiFi.mode(WIFI_OFF);  // set the WIFI_OFF mode as precaution to ensure WiFi-radio off
-  delay(600000);  // delay 10 min before the next request
+  delay(3600000);  // delay 1 hr before the next request
   WiFi.mode(WIFI_STA);  // change back to WiFi station mode
 }
 
